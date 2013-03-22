@@ -74,7 +74,7 @@ public class PointGenerator extends Thread{
             out.writeDouble(multiplePoses[0][i]);
             out.writeDouble(multiplePoses[1][i]);
           }else {
-            System.out.println("[PUB xPosition : " + multiplePoses[0][i] + " ,yPosition : " + multiplePoses[1][i]);
+            System.out.println("[PUB xPosition : " + multiplePoses[0][i] + " ,yPosition : " + multiplePoses[1][i] + "]");
           }
         }
       }
