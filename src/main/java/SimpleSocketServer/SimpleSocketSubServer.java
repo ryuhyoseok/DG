@@ -1,22 +1,22 @@
 package SimpleSocketServer;
 
-import loc.PointGenerator;
+import loc.RangeGenerator;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class SimpleSocketServer implements Runnable {
+public class SimpleSocketSubServer implements Runnable {
     ServerSocket serverSocket;
     Socket socket;
     Thread thr;
     PubXMLGenerator xg;
 	  SubXMLGenerator sg;
-	
-    int portNumber = 1777;
-    
-    public SimpleSocketServer() {
+
+    int portNumber = 2777;
+
+    public SimpleSocketSubServer() {
       
     }
  
@@ -61,12 +61,13 @@ public class SimpleSocketServer implements Runnable {
     	@Override
     	public void run(){
     		try {
-          PointGenerator generator = new PointGenerator();
-          generator.setBulkSize(500);
-          generator.setSleepTime(10);
-          generator.setXDistribution(new UniformRealDistribution(0 , 100000));
-          generator.setYDistribution(new UniformRealDistribution(0 , 100000));
+          RangeGenerator generator = new RangeGenerator();
+          generator.setBulk(500);
+          generator.setSleepTime(5);
+          generator.setXDistributions(new UniformRealDistribution(0 , 100000) , new UniformRealDistribution(1000 , 10000));
+          generator.setYDistributions(new UniformRealDistribution(0 , 100000) , new UniformRealDistribution(1000 , 10000));
           generator.setOutputStream(socket.getOutputStream());
+//          generator.setRangeNum(1);
 	    		generator.run();
     		} catch(Exception e){e.printStackTrace();}
     		
@@ -75,7 +76,7 @@ public class SimpleSocketServer implements Runnable {
     
     public static void main(String[] args) {
 
-    	SimpleSocketServer server = new  SimpleSocketServer();
+    	SimpleSocketSubServer server = new SimpleSocketSubServer();
       server.start();
     }
 }

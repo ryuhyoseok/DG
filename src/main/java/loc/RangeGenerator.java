@@ -4,7 +4,10 @@ import object.RangeObject;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,14 +16,16 @@ import java.io.DataOutputStream;
  * Time: 오후 7:55
  * To change this template use File | Settings | File Templates.
  */
-public class RangeGenerator extends Thread{
+public class RangeGenerator{
   private RealDistribution xDistribution = null;
   private RealDistribution xLenDistritubion = null;
   private RealDistribution yDistribution = null;
   private RealDistribution yLenDistribution = null;
   private int bulk;
   private long sleepTime;
-  private DataOutputStream out;
+  private BufferedWriter writer = null;
+  private long id = 0;
+  private long rangeNum = Long.MAX_VALUE;
 
   public RangeGenerator(){
     setBulk(1);
@@ -41,8 +46,16 @@ public class RangeGenerator extends Thread{
     this.bulk = bulk;
   }
 
+  public void setOutputStream(OutputStream out){
+    this.writer = new BufferedWriter(new OutputStreamWriter(out));
+  }
+
   public void setSleepTime(long sleepTime) {
     this.sleepTime = sleepTime;
+  }
+
+  public void setRangeNum(long rangeNum) {
+    this.rangeNum = rangeNum;
   }
 
   private void distributionChk() throws Exception{
@@ -67,20 +80,23 @@ public class RangeGenerator extends Thread{
     return objects;
   }
 
-  @Override
   public void run() {
+    long sent = 0;
+    long time = 0;
     try{
       while(true) {
+        if(id > rangeNum)
+          break;
         Thread.sleep(sleepTime);
         RangeObject[] objects = generateObjects(bulk);
         for(int i = 0 ; i < bulk; i ++) {
           double[] mins = objects[i].getMinPos();
           double[] maxs = objects[i].getMaxPos();
-          if(out != null) {
-            out.writeDouble(mins[0]);
-            out.writeDouble(mins[1]);
-            out.writeDouble(maxs[0]);
-            out.writeDouble(maxs[1]);
+          if(writer != null) {
+            String str =  new String(1 + "," + (id++) + "," + mins[0] + "," + mins[1] + "," + maxs[0] + "," + maxs[1] + "," + -1 +"\n");
+            writer.write(str);
+            writer.flush();
+            sent ++;
           }else {
             System.out.println("[SUB xMin : " + mins[0] + " ,yMin : " + mins[1] + " , xMax : " + maxs[0] + " , yMax : " + maxs[1] + "]");
           }
@@ -88,6 +104,7 @@ public class RangeGenerator extends Thread{
       }
     } catch(InterruptedException ire) {
     } catch(Exception e) {
+      System.out.println("TOTAL SENT : " + sent );
       e.printStackTrace();
     }
   }
@@ -99,10 +116,8 @@ public class RangeGenerator extends Thread{
     generator.setBulk(2);
     generator.setSleepTime(50);
 
-    generator.start();
     Thread.sleep(5000);
 
-    generator.interrupt();
 
   }
 

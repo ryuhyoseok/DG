@@ -2,8 +2,10 @@ package loc;
 
 import org.apache.commons.math3.distribution.*;
 
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 
 /**
@@ -13,12 +15,13 @@ import java.nio.ByteBuffer;
  * To change this template use File | Settings | File Templates.
  */
 
-public class PointGenerator extends Thread{
+public class PointGenerator {
   private RealDistribution xDistribution = null;
   private RealDistribution yDistirbution = null;
   private long sleepTime = -1;
   private int bulk;
-  private DataOutputStream out = null;
+  private BufferedWriter writer = null;
+  private long id = 0;
 
   public PointGenerator(){
     this.sleepTime = 10;
@@ -41,16 +44,9 @@ public class PointGenerator extends Thread{
   }
 
   public void setOutputStream(OutputStream out) {
-    this.out = new DataOutputStream(out);
+    this.writer = new BufferedWriter(new OutputStreamWriter(out));
   }
 
-//  private double[] generateOneObject() throws Exception{
-//    distributionChk();
-//    double[] poses = new double[2];
-//    poses[0] = xDistribution.sample();
-//    poses[1] = yDistirbution.sample();
-//    return poses;
-//  }
   private double[][] generateObjects(int objectNum) throws Exception {
     distributionChk();
     double[][] multiplePoses = new double[2][];
@@ -63,23 +59,32 @@ public class PointGenerator extends Thread{
       throw new Exception("set distribution model first");
     }
   }
-  @Override
+
   public void run() {
+    long sent = 0;
+    long totalTime = 0;
     try{
       while(true) {
-        Thread.sleep(sleepTime);
+        if(sleepTime != 0) {
+          Thread.sleep(sleepTime);
+        }
+        long time = System.currentTimeMillis();
         double[][] multiplePoses = generateObjects(bulk);
         for(int i = 0 ; i < multiplePoses[0].length; i ++) {
-          if(out != null) {
-            out.writeDouble(multiplePoses[0][i]);
-            out.writeDouble(multiplePoses[1][i]);
+          if(writer != null) {
+            String str =  new String(0 + "," + (id++) + "," + multiplePoses[0][i] + "," + multiplePoses[1][i]+ "," + -1 +"\n");
+            writer.write(str);
+            writer.flush();
+            sent ++;
           }else {
             System.out.println("[PUB xPosition : " + multiplePoses[0][i] + " ,yPosition : " + multiplePoses[1][i] + "]");
           }
         }
+        time = System.currentTimeMillis() - time;
+        totalTime += time;
       }
-    } catch(InterruptedException ire) {
     } catch(Exception e) {
+      System.out.println("TOTAL SENT : " + sent + " , time : " + totalTime);
       e.printStackTrace();
     }
   }
@@ -91,9 +96,7 @@ public class PointGenerator extends Thread{
     pointGenerator.setSleepTime(50);
     pointGenerator.setBulkSize(2);
 
-    pointGenerator.start();
     Thread.sleep(5000);
-    pointGenerator.interrupt();
 
   }
 }
