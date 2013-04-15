@@ -2,10 +2,7 @@ package loc;
 
 import org.apache.commons.math3.distribution.*;
 
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
 
 /**
@@ -20,6 +17,7 @@ public class PointGenerator {
   private RealDistribution yDistirbution = null;
   private long sleepTime = -1;
   private int bulk;
+  private DataOutputStream dout;
   private BufferedWriter writer = null;
   private long id = 0;
 
@@ -44,7 +42,8 @@ public class PointGenerator {
   }
 
   public void setOutputStream(OutputStream out) {
-    this.writer = new BufferedWriter(new OutputStreamWriter(out));
+//    this.writer = new BufferedWriter(new OutputStreamWriter(out));
+    this.dout = new DataOutputStream(out);
   }
 
   private double[][] generateObjects(int objectNum) throws Exception {
@@ -60,7 +59,7 @@ public class PointGenerator {
     }
   }
 
-  public void run() {
+  public void run() throws IOException {
     long sent = 0;
     long totalTime = 0;
     try{
@@ -71,10 +70,18 @@ public class PointGenerator {
         long time = System.currentTimeMillis();
         double[][] multiplePoses = generateObjects(bulk);
         for(int i = 0 ; i < multiplePoses[0].length; i ++) {
-          if(writer != null) {
-            String str =  new String(0 + "," + (id++) + "," + multiplePoses[0][i] + "," + multiplePoses[1][i]+ "," + -1 +"\n");
-            writer.write(str);
-            writer.flush();
+//          if(writer != null) {
+//            String str =  new String(0 + "," + (id++) + "," + multiplePoses[0][i] + "," + multiplePoses[1][i]+ "," + -1 +"\n");
+//            writer.write(str);
+//            writer.flush();
+//            sent ++;
+          if(dout != null) {
+            dout.writeShort(0);
+            dout.writeLong(id++);
+            dout.writeDouble(multiplePoses[0][i]);
+            dout.writeDouble(multiplePoses[1][i]);
+            dout.writeShort(-1);
+            dout.flush();
             sent ++;
           }else {
             System.out.println("[PUB xPosition : " + multiplePoses[0][i] + " ,yPosition : " + multiplePoses[1][i] + "]");

@@ -1,5 +1,6 @@
 package SimpleSocketServer;
 
+import loc.PointGenerator;
 import loc.RangeGenerator;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
@@ -62,13 +63,14 @@ public class SimpleSocketSubServer implements Runnable {
     	public void run(){
     		try {
           RangeGenerator generator = new RangeGenerator();
-          generator.setBulk(500);
-          generator.setSleepTime(5);
-          generator.setXDistributions(new UniformRealDistribution(0 , 100000) , new UniformRealDistribution(1000 , 10000));
-          generator.setYDistributions(new UniformRealDistribution(0 , 100000) , new UniformRealDistribution(1000 , 10000));
+          generator.setBulk(4000);
+          generator.setSleepTime(25);
+          generator.setXDistributions(new UniformRealDistribution(0, 100000), new UniformRealDistribution(100, 300));
+          generator.setYDistributions(new UniformRealDistribution(0, 100000), new UniformRealDistribution(100, 300));
           generator.setOutputStream(socket.getOutputStream());
-//          generator.setRangeNum(1);
+          generator.setRangeNum(350000);
 	    		generator.run();
+
     		} catch(Exception e){e.printStackTrace();}
     		
     	}
