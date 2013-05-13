@@ -68,7 +68,7 @@ public class SimpleSocketSubServer implements Runnable {
           generator.setXDistributions(new UniformRealDistribution(0, 100000), new UniformRealDistribution(100, 300));
           generator.setYDistributions(new UniformRealDistribution(0, 100000), new UniformRealDistribution(100, 300));
           generator.setOutputStream(socket.getOutputStream());
-          generator.setRangeNum(350000);
+          generator.setRangeNum(250000);
 	    		generator.run();
 
     		} catch(Exception e){e.printStackTrace();}

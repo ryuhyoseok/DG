@@ -4,7 +4,10 @@ import object.RangeObject;
 import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,7 +16,7 @@ import java.io.*;
  * Time: 오후 7:55
  * To change this template use File | Settings | File Templates.
  */
-public class RangeGenerator{
+public class FourthRangeGenerator {
   private RealDistribution xDistribution = null;
   private RealDistribution xLenDistritubion = null;
   private RealDistribution yDistribution = null;
@@ -25,7 +28,7 @@ public class RangeGenerator{
   private long id = 0;
   private long rangeNum = Long.MAX_VALUE;
 
-  public RangeGenerator(){
+  public FourthRangeGenerator(){
     setBulk(1);
     setSleepTime(10);
   }
@@ -82,6 +85,26 @@ public class RangeGenerator{
   public void run() throws IOException {
     long sent = 0;
     long time = 0;
+      int gridSize = 512;
+      int count;
+      int sum = 0;
+
+    double cur_minx;
+    double cur_miny;
+      double cur_maxx;
+      double cur_maxy;
+
+      int MinGridX;
+      int MinGridY;
+      int MaxGridX;
+      int MaxGridY;
+
+      int gridCellNum;
+
+      HashMap<Integer, Integer> grid = new HashMap<Integer, Integer>(gridSize*gridSize);
+
+
+
     try{
       while(true) {
         if(id > rangeNum)
@@ -89,6 +112,52 @@ public class RangeGenerator{
         Thread.sleep(sleepTime);
         RangeObject[] objects = generateObjects(bulk);
 
+          for(int i =0;i<bulk; i++){
+              cur_minx = objects[i].getMinPos()[0];
+              cur_miny = objects[i].getMinPos()[1];
+              cur_maxx = objects[i].getMaxPos()[0];
+              cur_maxy = objects[i].getMaxPos()[1];
+
+              MinGridX = (int)cur_minx / gridSize;
+              MinGridY = (int)cur_miny / gridSize;
+              MaxGridX = (int)cur_maxx / gridSize;
+              MaxGridY = (int)cur_maxy / gridSize;
+
+              for(int n = MinGridX; n < MaxGridX+1; n++){
+                  for(int m = MinGridY; m < MaxGridY+1; m++){
+
+                      gridCellNum = n + gridSize*m;
+                      if(!grid.containsKey(gridCellNum)){
+                          sum = sum + 1;
+                          grid.put(gridCellNum, 1);
+                      }
+                      else{
+                          count = grid.get(gridCellNum);
+                          grid.put(gridCellNum, count+1);
+                          sum = sum + 1;
+                      }
+
+
+                  }
+              }
+
+          }
+          dout.writeShort(-2);
+          dout.writeInt(sum);
+          dout.flush();
+
+          for(int i=0; i<gridSize*gridSize; i++){
+              dout.writeShort(-3);
+              if(!grid.containsKey(i)){
+                  dout.writeInt(i);
+                  dout.writeInt(0);
+              }
+              else{
+                  dout.writeInt(i);
+                  dout.writeInt(grid.get(i));
+              }
+              dout.flush();
+          }
 
 
         for(int i = 0 ; i < bulk; i ++) {
@@ -124,7 +193,7 @@ public class RangeGenerator{
   }
 
   public static void main(String[] args) throws InterruptedException {
-    RangeGenerator generator = new RangeGenerator();
+    FourthRangeGenerator generator = new FourthRangeGenerator();
     generator.setXDistributions(new UniformRealDistribution(0 , 1000) , new UniformRealDistribution(10 , 50));
     generator.setYDistributions(new UniformRealDistribution(0 , 10000) , new UniformRealDistribution(50 , 70));
     generator.setBulk(350000);

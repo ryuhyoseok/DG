@@ -61,9 +61,9 @@ public class SimpleSocketServer implements Runnable {
     	@Override
     	public void run(){
     		try {
-          Thread.sleep(120000);
+          Thread.sleep(60000);
           PointGenerator generator = new PointGenerator();
-          generator.setBulkSize(5000);
+          generator.setBulkSize(1000);
           generator.setSleepTime(50);
           generator.setXDistribution(new UniformRealDistribution(0 , 100000));
           generator.setYDistribution(new UniformRealDistribution(0 , 100000));
